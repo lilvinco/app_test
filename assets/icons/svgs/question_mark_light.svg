@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26">
+    <g fill="none" fill-rule="evenodd">
+        <g>
+            <g transform="translate(-26 -450) translate(27 451)">
+                <circle cx="12" cy="12" r="12" stroke="#D7D7D7" stroke-width="2"/>
+                <text fill="#000" font-family="GraphikLCTT-Regular, Graphik LC TT" font-size="18" letter-spacing="-.257">
+                    <tspan x="8.12" y="19">?</tspan>
+                </text>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="17px" height="17px" viewBox="0 0 17 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>arrow_icon</title>
+    <g id="arrow_icon" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="0.75">
+        <g transform="translate(5.000000, 1.000000)" id="Path-Copy" stroke="#85888E" stroke-width="2">
+            <polyline transform="translate(3.750000, 7.500000) rotate(-90.000000) translate(-3.750000, -7.500000) " points="11.25 3.75 3.75 11.25 -3.75 3.75"></polyline>
+        </g>
+    </g>
+</svg>

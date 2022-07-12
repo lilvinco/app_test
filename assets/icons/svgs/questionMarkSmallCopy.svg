@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+    <g fill="none" fill-rule="evenodd">
+        <g>
+            <g>
+                <g>
+                    <g>
+                        <g>
+                            <g transform="translate(-178.000000, -901.000000) translate(15.000000, 107.000000) translate(0.000000, 633.000000) translate(0.000000, 92.000000) translate(0.000000, 44.500000) translate(163.000000, 24.500000)">
+                                <circle cx="10" cy="10" r="10" fill="#EEE"/>
+                                <text fill="#000" font-family="GraphikLCTT-Medium, Graphik LC TT" font-size="13" font-weight="400" letter-spacing="-.186">
+                                    <tspan x="7.213" y="15">?</tspan>
+                                </text>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

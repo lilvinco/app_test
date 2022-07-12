@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "649661458375",
+    "project_id": "fanapp-9676f",
+    "storage_bucket": "fanapp-9676f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:649661458375:android:df24f1e405ed00f44b5be2",
+        "android_client_info": {
+          "package_name": "com.igrooveag.rsnbuzebhdpoeizt"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "649661458375-s0na598b9q8vlb5mara1gnsqlcbjfptq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfTiFGciffqIhiUJyQa1AMhOXBHMd7G1I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "649661458375-s0na598b9q8vlb5mara1gnsqlcbjfptq.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "649661458375-0sfp4af83bl491pn5c99gplnfcasg1mn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.igrooveag.rsnbuzebhdpoeizt"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

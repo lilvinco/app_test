@@ -1,0 +1,7 @@
+<svg width="36" height="47" viewBox="0 0 36 47" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="#FFA030" stroke-width="2" fill="none" fill-rule="evenodd">
+        <path stroke-linecap="square" d="M1 1.5h34M1 45.5h34"/>
+        <path d="M4 45.5v-7.578a8 8 0 0 1 1.344-4.437L12 23.5l-6.656-9.985A8 8 0 0 1 4 9.078V1.5M32 1.5v7.578a8 8 0 0 1-1.344 4.437L24 23.5l6.656 9.985A8 8 0 0 1 32 37.922V45.5"/>
+        <path d="M11 38.5v-.578a1 1 0 0 1 .169-.556L18 27.12l6.832 10.247c.11.165.168.358.168.555v.578H11z" fill="#FFA030" stroke-linecap="square"/>
+    </g>
+</svg>
