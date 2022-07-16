@@ -1,14 +1,15 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:igroove_fan_box_one/base/base.dart';
 import 'package:igroove_fan_box_one/constants/assets.dart';
 import 'package:igroove_fan_box_one/core/services/audio_handler.dart';
 import 'package:igroove_fan_box_one/core/services/comment_service.dart';
-import 'package:igroove_fan_box_one/core/services/media_player_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:igroove_fan_box_one/injection_container.dart';
+import 'package:igroove_fan_box_one/main.dart';
+import 'package:igroove_fan_box_one/page_notifier.dart';
 import 'package:igroove_fan_box_one/ui/pages/home/tabs/fanbox/fanbox.dart';
 
 class MediaPlayerWidget extends StatefulWidget {
@@ -23,28 +24,30 @@ class MediaPlayerWidget extends StatefulWidget {
 class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
   bool isLoading = false;
   double yPositionWidget = 0;
+  final playerStateManager = sl<PlayerStateManager>();
 
   @override
   void initState() {
     print("INITSTATE MediaPlayer");
 
-    MyAudioHandler.streamControllerMediaPlayerData.stream
+    PlayerStateManager.streamControllerMediaPlayerData.stream
         .listen((newMediaPlayerData) {
       print("New MediaPlayerData received (small)");
       if (mounted) {
         setState(() {});
       }
-      MyAudioHandler.updateHappened();
+      playerStateManager.updateHappened();
     });
 
-    MyAudioHandler.streamControllerPlayerStateUpdate.stream
+    PlayerStateManager.streamControllerPlayerStateUpdate.stream
         .listen((newPlayerState) {
       if (mounted) {
         setState(() {});
       }
     });
 
-    MyAudioHandler.streamControllerWidgetYPosition.stream.listen((newPosition) {
+    PlayerStateManager.streamControllerWidgetYPosition.stream
+        .listen((newPosition) {
       yPositionWidget = newPosition;
       print("Switch position to => ${yPositionWidget.toString()}");
       if (mounted) {
@@ -52,16 +55,17 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
       }
     });
 
-    MyAudioHandler.streamControllerPlayerStatusSwitch.stream
+    PlayerStateManager.streamControllerPlayerStatusSwitch.stream
         .listen((playerStatus) {
       print("PlayerStatus => ${playerStatus.toString()}");
-      audioHandler.play();
+      PlayerStateManager.playMusic();
+      //audioHandler.play();
       if (mounted) {
         setState(() {});
       }
     });
 
-    audioPlayer.onAudioPositionChanged.listen((Duration p) {
+    /*AudioService.position.listen((Duration p) {
       MyAudioHandler.streamControllerDuration.add(DurationState(
           buffered: MyAudioHandler.mediaDuration.maxDuration,
           progress: MyAudioHandler.mediaDuration.currentPosition,
@@ -76,7 +80,8 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
       }
     });
 
-    audioPlayer.onPlayerStateChanged.listen((PlayerState s) async {
+    _listenToPlaybackState();*/
+/*    audioPlayer.onPlayerStateChanged.listen((PlayerState s) async {
       MyAudioHandler.setPlayerState(s.name);
 
       if (s.name == PlayerState.PLAYING.name) {
@@ -142,17 +147,88 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
           await audioHandler.stop();
         }
       }
-    });
+    });*/
 
-    audioPlayer.onPlayerError.listen((msg) {
-      print('audioPlayer error : $msg');
-    });
+    // audioPlayer.onPlayerError.listen((msg) {
+    //   print('audioPlayer error : $msg');
+    // });
     super.initState();
   }
 
+/*  void _listenToPlaybackState() {
+    audioHandler.playbackState.listen((playbackState) async {
+      final isPlaying = playbackState.playing;
+      final processingState = playbackState.processingState;
+      if (processingState == AudioProcessingState.loading ||
+          processingState == AudioProcessingState.buffering) {
+        print("Buffering...");
+      } else if (!isPlaying) {
+        MyAudioHandler.mediaDuration.lastPosition =
+            MyAudioHandler.mediaDuration.currentPosition;
+      } else if (processingState != AudioProcessingState.completed) {
+        print("Track completed");
+        //MyAudioHandler.checkViewTime();
+        MyAudioHandler.mediaDuration.lastPosition =
+            MyAudioHandler.mediaDuration.currentPosition;
+
+        if (!CommentService.commentFieldHasFocus) {
+          // Comment field has no focus so track can be skipped
+
+          if (MyAudioHandler.repeatActivated) {
+            // Repeat is activated so play same track again
+
+            MyAudioHandler.updateMediaPlayerData(
+                newMediaPlayerData: MyAudioHandler.mediaPlayerData);
+          } else {
+            if (MyAudioHandler.mediaPlayerData.trackPosition! <
+                MyAudioHandler.mediaPlayerData.albumtracks!.length - 1) {
+              // Next track available so play it
+
+              MyAudioHandler.updateMediaPlayerData(
+                  newMediaPlayerData: MyAudioHandler.mediaPlayerData.copyWith(
+                      trackPosition:
+                          MyAudioHandler.mediaPlayerData.trackPosition! + 1));
+              audioHandler.play();
+            } else {
+              //Check if next release is available
+
+              if (MyAudioHandler.mediaPlayerData.albumList!.length >
+                  (MyAudioHandler.mediaPlayerData.albumPosition! + 1)) {
+                MyAudioHandler.updateMediaPlayerData(
+                    newMediaPlayerData: MyAudioHandler.mediaPlayerData.copyWith(
+                        albumPosition:
+                            MyAudioHandler.mediaPlayerData.albumPosition! + 1,
+                        albumtracks: MyAudioHandler
+                            .mediaPlayerData
+                            .albumList![
+                                MyAudioHandler.mediaPlayerData.albumPosition! +
+                                    1]
+                            .tracks!,
+                        trackPosition: 0));
+              } else {
+                // Next release and next track not available
+
+                await audioHandler.stop();
+              }
+            }
+          }
+        } else {
+          // Comment field has focus so not skipping track
+
+          await audioHandler.stop();
+        }
+      } else {
+        MyAudioHandler.mediaDuration.lastPosition =
+            MyAudioHandler.mediaDuration.currentPosition;
+        audioHandler.seek(Duration.zero);
+        audioHandler.pause();
+      }
+    });
+  }*/
+
   @override
   Widget build(BuildContext context) {
-    if (MyAudioHandler.mediaPlayerData.albumtracks!.isEmpty) {
+    if (PlayerStateManager.mediaPlayerData.albumtracks!.isEmpty) {
       return const SizedBox();
     }
 
@@ -167,13 +243,13 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
 
   Widget audioElements() {
     return Visibility(
-      visible: MyAudioHandler.showSmallPlayer,
+      visible: PlayerStateManager.showSmallPlayer,
       child: GestureDetector(
         onTap: () async {
           print(mounted);
           if (mounted) {
             setState(() {
-              MyAudioHandler.setShowSmallPlayer(false);
+              PlayerStateManager.setShowSmallPlayer(false);
             });
 
             await Navigator.pushNamed(
@@ -181,7 +257,7 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
                 AppRoutes.fullMediaPlayerWidget);
 
             setState(() {
-              MyAudioHandler.setShowSmallPlayer(true);
+              PlayerStateManager.setShowSmallPlayer(true);
             });
           }
         },
@@ -211,9 +287,9 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
                               width: 40,
                               child: CachedNetworkImage(
                                 fit: BoxFit.cover,
-                                imageUrl: MyAudioHandler
+                                imageUrl: PlayerStateManager
                                         .mediaPlayerData
-                                        .albumList![MyAudioHandler
+                                        .albumList![PlayerStateManager
                                             .mediaPlayerData.albumPosition!]
                                         .coverUrl ??
                                     '',
@@ -241,9 +317,9 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
                                 width: MediaQuery.of(context).size.width - 180,
                                 padding: const EdgeInsets.all(0.0),
                                 child: Text(
-                                  MyAudioHandler
+                                  PlayerStateManager
                                       .mediaPlayerData
-                                      .albumtracks![MyAudioHandler
+                                      .albumtracks![PlayerStateManager
                                           .mediaPlayerData.trackPosition!]
                                       .title!,
                                   overflow: TextOverflow.ellipsis,
@@ -260,9 +336,9 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
                               ),
                               const SizedBox(height: 3),
                               Text(
-                                MyAudioHandler
+                                PlayerStateManager
                                     .mediaPlayerData
-                                    .albumtracks![MyAudioHandler
+                                    .albumtracks![PlayerStateManager
                                         .mediaPlayerData.trackPosition!]
                                     .artist!,
                                 overflow: TextOverflow.ellipsis,
@@ -285,9 +361,10 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
                               GestureDetector(
                                 behavior: HitTestBehavior.opaque,
                                 onTap: () async {
-                                  audioHandler.play();
+                                  PlayerStateManager.playMusic();
                                 },
-                                child: MyAudioHandler.playerState != "PLAYING"
+                                child: PlayerStateManager.playerState !=
+                                        "PLAYING"
                                     ? Padding(
                                         padding:
                                             const EdgeInsets.only(bottom: 6.0),
@@ -313,8 +390,8 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
                               GestureDetector(
                                 behavior: HitTestBehavior.opaque,
                                 onTap: () async {
-                                  MyAudioHandler.audioPlayerReset();
-                                  MyAudioHandler.setShowSmallPlayer(false);
+                                  PlayerStateManager.audioPlayerReset();
+                                  PlayerStateManager.setShowSmallPlayer(false);
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.only(
@@ -334,8 +411,9 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                       child: StreamBuilder<DurationState>(
-                        initialData: MyAudioHandler.durationState,
-                        stream: MyAudioHandler.streamControllerDuration.stream,
+                        initialData: PlayerStateManager.durationState,
+                        stream:
+                            PlayerStateManager.streamControllerDuration.stream,
                         builder: (context, snapshot) {
                           if (snapshot.hasError) {
                             print('Duration Error:: ${snapshot.error}');
@@ -353,10 +431,10 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
                             barHeight: 3,
                             onSeek: (duration) {
                               setState(() {
-                                MyAudioHandler.mediaDuration.lastPosition =
+                                PlayerStateManager.mediaDuration.lastPosition =
                                     duration;
                               });
-                              MyAudioHandler.audioPlayerSeek(
+                              playerStateManager.audioPlayerSeek(
                                   durationSeek: duration);
                             },
                             thumbCanPaintOutsideBar: false,

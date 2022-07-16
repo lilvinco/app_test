@@ -16,6 +16,7 @@ import 'package:igroove_fan_box_one/localization/localization.dart';
 import 'package:igroove_fan_box_one/management/helper.dart';
 import 'package:igroove_fan_box_one/management/push_navigate_service.dart';
 import 'package:igroove_fan_box_one/model/magic_code.dart';
+import 'package:igroove_fan_box_one/page_notifier.dart';
 import 'package:igroove_fan_box_one/ui/pages/common/error_alert.dart';
 import 'package:igroove_fan_box_one/ui/pages/home/tabs/fanbox/fanbox.dart';
 import 'package:igroove_fan_box_one/ui/widgets/app_bar.dart';
@@ -117,7 +118,7 @@ class _FanBoxOverviewPageState extends State<FanBoxOverviewPage> {
           if (DateTime.now().isAfter(DateTime.fromMillisecondsSinceEpoch(
                   fanBox.releaseDateTimestamp! * 1000)) &&
               fanBox.hasAccess!) {
-            MyAudioHandler.setYPositionOfWidget(25);
+            PlayerStateManager.setYPositionOfWidget(25);
             await Navigator.pushNamed(
                 AppKeys.navigatorKey.currentState!.context, AppRoutes.fanBox,
                 arguments: FanBoxParameters(fanBox: fanBox));
@@ -226,7 +227,7 @@ class _FanBoxOverviewPageState extends State<FanBoxOverviewPage> {
   showVerification({required DigitalFanBoxes fanBox}) async {
     textEditingController = TextEditingController();
 
-    MyAudioHandler.setYPositionOfWidget(
+    PlayerStateManager.setYPositionOfWidget(
         MediaQuery.of(context).size.height / 100 * 70);
     await showModalBottomSheet(
         context: AppKeys.navigatorKey.currentState!.context,
@@ -537,7 +538,7 @@ class _FanBoxOverviewPageState extends State<FanBoxOverviewPage> {
             );
           });
         }).whenComplete(() {
-      MyAudioHandler.setYPositionOfWidget(100);
+      PlayerStateManager.setYPositionOfWidget(100);
     });
   }
 

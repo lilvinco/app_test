@@ -9,6 +9,7 @@ import 'package:igroove_fan_box_one/localization/localization.dart';
 import 'package:igroove_fan_box_one/base/base.dart';
 import 'package:igroove_fan_box_one/management/helper.dart';
 import 'package:igroove_fan_box_one/model/assets_model.dart';
+import 'package:igroove_fan_box_one/page_notifier.dart';
 import 'package:igroove_fan_box_one/ui/widgets/full_media_player_widget.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 // import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
@@ -218,10 +219,10 @@ class _AssetCardElementCommentState extends State<AssetCardElementComment> {
 
   clickAction() async {
     if (element!.type == 1) {
-      if (MyAudioHandler.mediaPlayerData.albumtracks!.isEmpty ||
-          MyAudioHandler.mediaPlayerData.albumtracks?.first.filename !=
+      if (PlayerStateManager.mediaPlayerData.albumtracks!.isEmpty ||
+          PlayerStateManager.mediaPlayerData.albumtracks?.first.filename !=
               element!.filename) {
-        MyAudioHandler.updateMediaPlayerData(
+        PlayerStateManager.updateMediaPlayerData(
           newMediaPlayerData: MediaPlayerData(
             activateStreaming: true,
             albumtracks: [element!],
@@ -236,12 +237,12 @@ class _AssetCardElementCommentState extends State<AssetCardElementComment> {
           ),
         );
       }
-      MyAudioHandler.setYPositionOfWidget(100);
-      MyAudioHandler.setShowSmallPlayer(false);
+      PlayerStateManager.setYPositionOfWidget(100);
+      PlayerStateManager.setShowSmallPlayer(false);
 
       await Navigator.pushNamed(AppKeys.navigatorKey.currentState!.context,
           AppRoutes.fullMediaPlayerWidget);
-      MyAudioHandler.setShowSmallPlayer(true);
+      PlayerStateManager.setShowSmallPlayer(true);
       // MyAudioHandler.audioPlayerReset();
       // MyAudioHandler.setShowSmallPlayer(false);
     } else if (element!.type! == 2) {

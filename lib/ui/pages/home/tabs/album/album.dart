@@ -7,10 +7,13 @@ import 'package:igroove_fan_box_one/constants/assets.dart';
 import 'package:igroove_fan_box_one/core/services/audio_handler.dart';
 import 'package:igroove_fan_box_one/core/services/media_player_service.dart';
 import 'package:igroove_fan_box_one/core/services/user_service.dart';
+import 'package:igroove_fan_box_one/injection_container.dart';
 import 'package:igroove_fan_box_one/localization/localization.dart';
+import 'package:igroove_fan_box_one/main.dart';
 import 'package:igroove_fan_box_one/management/helper.dart';
 import 'package:igroove_fan_box_one/model/assets_model.dart';
 import 'package:igroove_fan_box_one/model/releases_model.dart';
+import 'package:igroove_fan_box_one/page_notifier.dart';
 import 'package:igroove_fan_box_one/ui/pages/common/error_alert.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:igroove_fan_box_one/ui/pages/home/tabs/fanbox/fanbox.dart';
@@ -37,6 +40,7 @@ class _AlbumPageState extends State<AlbumPage> with TickerProviderStateMixin {
   MyAudioHandler mediaService = MyAudioHandler();
   bool? isLoading = false;
   late DigitalFanBoxes fanBox;
+  final playerStateManager = sl<PlayerStateManager>();
 
   @override
   void initState() {
@@ -230,9 +234,9 @@ class _AlbumPageState extends State<AlbumPage> with TickerProviderStateMixin {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () async {
-        await audioHandler.stop();
+        playerStateManager.stop();
         //await MyAudioHandler.audioPlayer.stop();
-        MyAudioHandler.updateMediaPlayerData(
+        PlayerStateManager.updateMediaPlayerData(
           newMediaPlayerData: MediaPlayerData(
               activateStreaming: true,
               albumtracks: releasesList[releaseIndex].tracks!,
@@ -240,7 +244,7 @@ class _AlbumPageState extends State<AlbumPage> with TickerProviderStateMixin {
               albumList: releasesList,
               albumPosition: releaseIndex),
         );
-        MyAudioHandler.setShowSmallPlayer(true);
+        PlayerStateManager.setShowSmallPlayer(true);
       },
       child: Column(
         children: <Widget>[
@@ -304,10 +308,11 @@ class _AlbumPageState extends State<AlbumPage> with TickerProviderStateMixin {
                             behavior: HitTestBehavior.opaque,
                             onTap: () async {
                               if (mounted) {
-                                if (MyAudioHandler.showSmallPlayer == false) {
-                                  await audioHandler.stop();
+                                if (PlayerStateManager.showSmallPlayer ==
+                                    false) {
+                                  playerStateManager.stop();
                                   //await MyAudioHandler.audioPlayer.stop();
-                                  MyAudioHandler.updateMediaPlayerData(
+                                  PlayerStateManager.updateMediaPlayerData(
                                     newMediaPlayerData: MediaPlayerData(
                                         activateStreaming: true,
                                         albumtracks:
@@ -318,7 +323,7 @@ class _AlbumPageState extends State<AlbumPage> with TickerProviderStateMixin {
                                   );
                                 }
                                 setState(() {
-                                  MyAudioHandler.setShowSmallPlayer(false);
+                                  PlayerStateManager.setShowSmallPlayer(false);
                                 });
 
                                 await Navigator.pushNamed(
@@ -326,7 +331,7 @@ class _AlbumPageState extends State<AlbumPage> with TickerProviderStateMixin {
                                     AppRoutes.fullMediaPlayerWidget);
 
                                 setState(() {
-                                  MyAudioHandler.setShowSmallPlayer(true);
+                                  PlayerStateManager.setShowSmallPlayer(true);
                                 });
                               }
                             },

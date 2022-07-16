@@ -1,3 +1,4 @@
+import 'package:audio_service/audio_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -8,17 +9,18 @@ import 'package:igroove_fan_box_one/core/services/audio_handler.dart';
 import 'package:igroove_fan_box_one/core/services/media_player_service.dart';
 import 'package:igroove_fan_box_one/core/services/user_service.dart';
 import 'package:igroove_fan_box_one/igroove.dart';
+import 'package:igroove_fan_box_one/injection_container.dart';
 import 'package:igroove_fan_box_one/localization/localization.dart';
+import 'package:igroove_fan_box_one/main.dart';
 import 'package:igroove_fan_box_one/management/helper.dart';
 import 'package:igroove_fan_box_one/model/releases_model.dart';
+import 'package:igroove_fan_box_one/page_notifier.dart';
 import 'package:igroove_fan_box_one/ui/pages/common/error_alert.dart';
 import 'package:igroove_fan_box_one/ui/pages/home/tabs/album/album.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:igroove_fan_box_one/ui/widgets/app_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-
-MyAudioHandler audioHandler = MyAudioHandler();
 
 class FanBoxParameters {
   final DigitalFanBoxes fanBox;
@@ -41,13 +43,14 @@ class _FanBoxPageState extends State<FanBoxPage> {
   bool isLoading = false;
   late DigitalFanBoxes fanBox;
   List<Releases> releasesList = [];
+  final playerStateManager = sl<PlayerStateManager>();
 
   @override
   void initState() {
     fanBox = widget.parameters.fanBox;
     getAlbum();
 
-    MyAudioHandler.streamControllerPlayerStateUpdate.stream
+    PlayerStateManager.streamControllerPlayerStateUpdate.stream
         .listen((newPlayerState) {
       if (mounted) {
         setState(() {});
@@ -76,7 +79,7 @@ class _FanBoxPageState extends State<FanBoxPage> {
         }
 
         releasesList = response.releases!;
-        //await checkDownloadNeeded();
+        //TODO: call loadPlaylist from page notifier\
       } else {
         await Navigator.pushNamed(
             AppKeys.navigatorKey.currentState!.context, AppRoutes.errorAlert,
@@ -134,7 +137,7 @@ class _FanBoxPageState extends State<FanBoxPage> {
         appBar: IGrooveAppBarWidget.fanBoxAppBar(
             leftTitle: "Music",
             onLeftTap: () {
-              MyAudioHandler.setYPositionOfWidget(100);
+              PlayerStateManager.setYPositionOfWidget(100);
               Navigator.pop(context);
             }) as PreferredSize,
         backgroundColor: IGrooveTheme.colors.fanBoxBlack,
@@ -240,30 +243,30 @@ class _FanBoxPageState extends State<FanBoxPage> {
                 GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: () async {
-                    if (MyAudioHandler.playerState == "PLAYING") {
-                      audioHandler.pause();
+                    if (PlayerStateManager.playerState == "PLAYING") {
+                      playerStateManager.pause();
                       //MyAudioHandler.pausePlayPlayer();
                     } else {
-                      if (MyAudioHandler
+                      if (PlayerStateManager
                           .mediaPlayerData.albumtracks!.isNotEmpty) {
                         print("Tap");
-                        audioHandler.play();
+                        playerStateManager.play();
                         //MyAudioHandler.pausePlayPlayer();
                       } else {
                         print("Pat");
                         // await MyAudioHandler.audioPlayer.stop();
-                        MyAudioHandler.updateMediaPlayerData(
+                        PlayerStateManager.updateMediaPlayerData(
                             newMediaPlayerData: MediaPlayerData(
                                 activateStreaming: true,
                                 albumtracks: releasesList[0].tracks!,
                                 trackPosition: 0,
                                 albumList: releasesList,
                                 albumPosition: 0));
-                        MyAudioHandler.setShowSmallPlayer(true);
+                        PlayerStateManager.setShowSmallPlayer(true);
                       }
                     }
                   },
-                  child: MyAudioHandler.playerState == "PLAYING"
+                  child: PlayerStateManager.playerState == "PLAYING"
                       ? SvgPicture.asset(
                           IGrooveAssets.svgbigPauseButtonYellowIcon,
                           width: 50,

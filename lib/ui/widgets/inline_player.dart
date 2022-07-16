@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:igroove_fan_box_one/base/base.dart';
 import 'package:igroove_fan_box_one/core/services/audio_handler.dart';
 import 'package:igroove_fan_box_one/core/services/media_player_service.dart';
+import 'package:igroove_fan_box_one/injection_container.dart';
+import 'package:igroove_fan_box_one/main.dart';
 import 'package:igroove_fan_box_one/model/assets_model.dart';
+import 'package:igroove_fan_box_one/page_notifier.dart';
 import 'package:igroove_fan_box_one/ui/pages/home/tabs/fanbox/fanbox.dart';
 import 'package:igroove_fan_box_one/ui/widgets/full_media_player_widget.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -37,6 +40,7 @@ class InlinePlayerState extends State<InlinePlayer> {
   double playFraction = 0.6;
   bool? _isDisposing;
   Duration durationPlayed = Duration.zero;
+  final playerStateManager = sl<PlayerStateManager>();
   @override
   initState() {
     _initPlayer();
@@ -110,9 +114,9 @@ class InlinePlayerState extends State<InlinePlayer> {
 
   @override
   deactivate() {
-    if (MyAudioHandler.showSmallPlayer == true) {
-     // MediaPlayerService.audioPlayerResume();
-      audioPlayer.resume();
+    if (PlayerStateManager.showSmallPlayer == true) {
+      // MediaPlayerService.audioPlayerResume();
+      playerStateManager.play();
     }
     super.deactivate();
   }
@@ -163,7 +167,7 @@ class InlinePlayerState extends State<InlinePlayer> {
                 initialized! &&
                 !isPlaying! &&
                 !_isDisposing!) {
-              audioHandler.play();
+              playerStateManager.play();
               await _controller!.play();
             }
           } else {

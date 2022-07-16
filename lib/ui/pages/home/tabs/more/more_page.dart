@@ -15,6 +15,7 @@ import 'package:igroove_fan_box_one/localization/localization.dart';
 import 'package:igroove_fan_box_one/management/app_model.dart';
 import 'package:igroove_fan_box_one/management/push_navigate_service.dart';
 import 'package:igroove_fan_box_one/model/app_settings.dart';
+import 'package:igroove_fan_box_one/page_notifier.dart';
 import 'package:igroove_fan_box_one/ui/widgets/app_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -197,8 +198,8 @@ class _MorePageState extends State<MorePage> {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () async {
-                MyAudioHandler.audioPlayerReset();
-                MyAudioHandler.setShowSmallPlayer(false);
+                PlayerStateManager.audioPlayerReset();
+                PlayerStateManager.setShowSmallPlayer(false);
                 // reset api
                 Dio client = Provider.of(context, listen: false);
                 client.options.baseUrl =

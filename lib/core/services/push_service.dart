@@ -10,6 +10,7 @@ import 'package:igroove_fan_box_one/core/services/user_service.dart';
 import 'package:igroove_fan_box_one/helpers/utils.dart';
 import 'package:igroove_fan_box_one/model/assets_model.dart';
 import 'package:igroove_fan_box_one/model/releases_model.dart';
+import 'package:igroove_fan_box_one/page_notifier.dart';
 import 'package:igroove_fan_box_one/ui/widgets/full_media_player_widget.dart';
 import 'package:provider/provider.dart';
 
@@ -97,7 +98,7 @@ class PushService {
       await userService.markAsRead(id: int.parse(message['notification_id']));
       int count = await Utils.getNotificationCount();
       print("Notification Count after _handleOnResume => ${count.toString()}");
-      MyAudioHandler.streamControllerHomePage.add(2);
+      PlayerStateManager.streamControllerHomePage.add(2);
       await Future.delayed(const Duration(milliseconds: 400));
       return;
     }
@@ -111,10 +112,10 @@ class PushService {
     element = await getAsset(id: element.id!);
 
     if (element.type == 1) {
-      if (MyAudioHandler.mediaPlayerData.albumtracks!.isEmpty ||
-          MyAudioHandler.mediaPlayerData.albumtracks?.first.filename !=
+      if (PlayerStateManager.mediaPlayerData.albumtracks!.isEmpty ||
+          PlayerStateManager.mediaPlayerData.albumtracks?.first.filename !=
               element.filename) {
-        MyAudioHandler.updateMediaPlayerData(
+        PlayerStateManager.updateMediaPlayerData(
           newMediaPlayerData: MediaPlayerData(
               activateStreaming: true,
               albumtracks: [element],
@@ -128,12 +129,12 @@ class PushService {
               albumPosition: 0),
         );
       }
-      MyAudioHandler.setYPositionOfWidget(100);
-      MyAudioHandler.setShowSmallPlayer(false);
+      PlayerStateManager.setYPositionOfWidget(100);
+      PlayerStateManager.setShowSmallPlayer(false);
 
       await Navigator.pushNamed(AppKeys.navigatorKey.currentState!.context,
           AppRoutes.fullMediaPlayerWidget);
-      MyAudioHandler.setShowSmallPlayer(true);
+      PlayerStateManager.setShowSmallPlayer(true);
     } else if (element.type! == 2) {
       await Navigator.pushNamed(
         AppKeys.navigatorKey.currentState!.context,

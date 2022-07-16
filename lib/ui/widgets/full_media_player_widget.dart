@@ -8,8 +8,10 @@ import 'package:flutter/material.dart';
 import 'package:igroove_fan_box_one/constants/assets.dart';
 import 'package:igroove_fan_box_one/core/services/audio_handler.dart';
 import 'package:igroove_fan_box_one/core/services/media_player_service.dart';
+import 'package:igroove_fan_box_one/injection_container.dart';
 import 'package:igroove_fan_box_one/management/helper.dart';
 import 'package:igroove_fan_box_one/model/assets_model.dart';
+import 'package:igroove_fan_box_one/page_notifier.dart';
 import 'package:igroove_fan_box_one/ui/shared/themes.dart';
 import 'package:igroove_fan_box_one/ui/widgets/comment_reply_box_widget.dart';
 import 'package:igroove_fan_box_one/ui/widgets/comment_show_widget.dart';
@@ -49,6 +51,8 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
   final ScrollController _scrollController = ScrollController();
   bool isLimitReached = false;
 
+  final playerStateManager = sl<PlayerStateManager>();
+
   onLimitReached() {
     setState(() {
       isLimitReached = true;
@@ -72,11 +76,11 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
     super.initState();
 
     if (widget.parameters?.video != null) {
-      MyAudioHandler.audioPlayerReset();
-      MyAudioHandler.setShowSmallPlayer(false);
+      PlayerStateManager.audioPlayerReset();
+      PlayerStateManager.setShowSmallPlayer(false);
     }
 
-    MyAudioHandler.streamControllerPlayerStateUpdate.stream
+    PlayerStateManager.streamControllerPlayerStateUpdate.stream
         .listen((newPlayerState) {
       if (mounted) {
         setState(() {});
@@ -123,9 +127,10 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
         parameters: CommentReplyWidgetParameters(
           assetID: widget.parameters?.video != null
               ? widget.parameters!.video!.id!
-              : MyAudioHandler
+              : PlayerStateManager
                   .mediaPlayerData
-                  .albumtracks![MyAudioHandler.mediaPlayerData.trackPosition!]
+                  .albumtracks![
+                      PlayerStateManager.mediaPlayerData.trackPosition!]
                   .id!,
           activateFanQuestions: false,
         ),
@@ -222,9 +227,9 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                 width: 180,
                                 child: CachedNetworkImage(
                                   fit: BoxFit.cover,
-                                  imageUrl: MyAudioHandler
+                                  imageUrl: PlayerStateManager
                                           .mediaPlayerData
-                                          .albumList![MyAudioHandler
+                                          .albumList![PlayerStateManager
                                               .mediaPlayerData.albumPosition!]
                                           .coverUrl ??
                                       '',
@@ -321,33 +326,34 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                       child: Text(
                                         widget.parameters?.video != null
                                             ? widget.parameters!.video!.title!
-                                            : MyAudioHandler
+                                            : PlayerStateManager
                                                         .mediaPlayerData
                                                         .albumtracks![
-                                                            MyAudioHandler
+                                                            PlayerStateManager
                                                                 .mediaPlayerData
                                                                 .trackPosition!]
                                                         .isNewsFeedItem ==
                                                     1
-                                                ? MyAudioHandler
+                                                ? PlayerStateManager
                                                     .mediaPlayerData
-                                                    .albumtracks![MyAudioHandler
-                                                        .mediaPlayerData
-                                                        .trackPosition!]
+                                                    .albumtracks![
+                                                        PlayerStateManager
+                                                            .mediaPlayerData
+                                                            .trackPosition!]
                                                     .title!
-                                                : MyAudioHandler
+                                                : PlayerStateManager
                                                         .mediaPlayerData
                                                         .albumtracks![
-                                                            MyAudioHandler
+                                                            PlayerStateManager
                                                                 .mediaPlayerData
                                                                 .trackPosition!]
                                                         .order!
                                                         .toString() +
                                                     ". " +
-                                                    MyAudioHandler
+                                                    PlayerStateManager
                                                         .mediaPlayerData
                                                         .albumtracks![
-                                                            MyAudioHandler
+                                                            PlayerStateManager
                                                                 .mediaPlayerData
                                                                 .trackPosition!]
                                                         .title!,
@@ -368,9 +374,9 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                   Text(
                                     widget.parameters?.video != null
                                         ? widget.parameters!.video!.artist!
-                                        : MyAudioHandler
+                                        : PlayerStateManager
                                             .mediaPlayerData
-                                            .albumtracks![MyAudioHandler
+                                            .albumtracks![PlayerStateManager
                                                 .mediaPlayerData.trackPosition!]
                                             .artist!,
                                     style: TextStyle(
@@ -398,8 +404,8 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                             Padding(
                               padding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
                               child: StreamBuilder<DurationState>(
-                                initialData: MyAudioHandler.durationState,
-                                stream: MyAudioHandler
+                                initialData: PlayerStateManager.durationState,
+                                stream: PlayerStateManager
                                     .streamControllerDuration.stream,
                                 builder: (context, snapshot) {
                                   final durationState = snapshot.data;
@@ -416,10 +422,10 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                     barHeight: 3,
                                     onSeek: (duration) {
                                       setState(() {
-                                        MyAudioHandler.mediaDuration
+                                        PlayerStateManager.mediaDuration
                                             .lastPosition = duration;
                                       });
-                                      MyAudioHandler.audioPlayerSeek(
+                                      playerStateManager.audioPlayerSeek(
                                           durationSeek: duration);
                                     },
                                     thumbCanPaintOutsideBar: false,
@@ -458,73 +464,77 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                       }
 
                                       setState(() {
-                                        if (!MyAudioHandler
+                                        if (!PlayerStateManager
                                             .mediaPlayerData
-                                            .albumtracks![MyAudioHandler
+                                            .albumtracks![PlayerStateManager
                                                 .mediaPlayerData.trackPosition!]
                                             .authUserLiked!) {
-                                          MyAudioHandler
+                                          PlayerStateManager
                                               .mediaPlayerData
-                                              .albumtracks![MyAudioHandler
+                                              .albumtracks![PlayerStateManager
                                                   .mediaPlayerData
                                                   .trackPosition!]
                                               .statistics!
-                                              .likes = MyAudioHandler
+                                              .likes = PlayerStateManager
                                                   .mediaPlayerData
-                                                  .albumtracks![MyAudioHandler
-                                                      .mediaPlayerData
-                                                      .trackPosition!]
+                                                  .albumtracks![
+                                                      PlayerStateManager
+                                                          .mediaPlayerData
+                                                          .trackPosition!]
                                                   .statistics!
                                                   .likes! +
                                               1;
                                         } else {
-                                          MyAudioHandler
+                                          PlayerStateManager
                                               .mediaPlayerData
-                                              .albumtracks![MyAudioHandler
+                                              .albumtracks![PlayerStateManager
                                                   .mediaPlayerData
                                                   .trackPosition!]
                                               .statistics!
-                                              .likes = MyAudioHandler
+                                              .likes = PlayerStateManager
                                                   .mediaPlayerData
-                                                  .albumtracks![MyAudioHandler
-                                                      .mediaPlayerData
-                                                      .trackPosition!]
+                                                  .albumtracks![
+                                                      PlayerStateManager
+                                                          .mediaPlayerData
+                                                          .trackPosition!]
                                                   .statistics!
                                                   .likes! -
                                               1;
                                         }
 
-                                        MyAudioHandler
+                                        PlayerStateManager
                                                 .mediaPlayerData
                                                 .albumtracks![
-                                                    MyAudioHandler.mediaPlayerData
+                                                    PlayerStateManager
+                                                        .mediaPlayerData
                                                         .trackPosition!]
                                                 .authUserLiked =
-                                            !MyAudioHandler
+                                            !PlayerStateManager
                                                 .mediaPlayerData
-                                                .albumtracks![MyAudioHandler
+                                                .albumtracks![PlayerStateManager
                                                     .mediaPlayerData
                                                     .trackPosition!]
                                                 .authUserLiked!;
                                       });
 
                                       await setAssetLike(
-                                          assetID: MyAudioHandler
+                                          assetID: PlayerStateManager
                                               .mediaPlayerData
-                                              .albumtracks![MyAudioHandler
+                                              .albumtracks![PlayerStateManager
                                                   .mediaPlayerData
                                                   .trackPosition!]
                                               .id!);
-                                      MyAudioHandler
+                                      PlayerStateManager
                                                   .mediaPlayerData.albumtracks![
-                                              MyAudioHandler.mediaPlayerData
+                                              PlayerStateManager.mediaPlayerData
                                                   .trackPosition!] =
                                           await getUpdatedAsset(
-                                              assetID: MyAudioHandler
+                                              assetID: PlayerStateManager
                                                   .mediaPlayerData
-                                                  .albumtracks![MyAudioHandler
-                                                      .mediaPlayerData
-                                                      .trackPosition!]
+                                                  .albumtracks![
+                                                      PlayerStateManager
+                                                          .mediaPlayerData
+                                                          .trackPosition!]
                                                   .id!);
 
                                       await Future.delayed(
@@ -537,9 +547,9 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                       padding:
                                           const EdgeInsets.only(bottom: 6.0),
                                       child: SvgPicture.asset(
-                                        MyAudioHandler
+                                        PlayerStateManager
                                                 .mediaPlayerData
-                                                .albumtracks![MyAudioHandler
+                                                .albumtracks![PlayerStateManager
                                                     .mediaPlayerData
                                                     .trackPosition!]
                                                 .authUserLiked!
@@ -547,9 +557,9 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                             : IGrooveAssets.svgLikeOpenIcon,
                                         width: 22,
                                         height: 22,
-                                        color: MyAudioHandler
+                                        color: PlayerStateManager
                                                 .mediaPlayerData
-                                                .albumtracks![MyAudioHandler
+                                                .albumtracks![PlayerStateManager
                                                     .mediaPlayerData
                                                     .trackPosition!]
                                                 .authUserLiked!
@@ -561,41 +571,44 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                 GestureDetector(
                                     behavior: HitTestBehavior.opaque,
                                     onTap: () async {
-                                      if (MyAudioHandler
+                                      if (PlayerStateManager
                                               .mediaPlayerData.trackPosition! !=
                                           0) {
-                                        MyAudioHandler.updateMediaPlayerData(
-                                            newMediaPlayerData: MyAudioHandler
+                                        PlayerStateManager.updateMediaPlayerData(
+                                            newMediaPlayerData: PlayerStateManager
                                                 .mediaPlayerData
                                                 .copyWith(
-                                                    trackPosition: MyAudioHandler
-                                                            .mediaPlayerData
-                                                            .trackPosition! -
-                                                        1));
-                                      } else if (MyAudioHandler
+                                                    trackPosition:
+                                                        PlayerStateManager
+                                                                .mediaPlayerData
+                                                                .trackPosition! -
+                                                            1));
+                                      } else if (PlayerStateManager
                                               .mediaPlayerData.albumPosition! >
                                           0) {
-                                        MyAudioHandler.updateMediaPlayerData(
-                                            newMediaPlayerData: MyAudioHandler
-                                                .mediaPlayerData
-                                                .copyWith(
-                                          albumtracks: MyAudioHandler
+                                        PlayerStateManager
+                                            .updateMediaPlayerData(
+                                                newMediaPlayerData:
+                                                    PlayerStateManager
+                                                        .mediaPlayerData
+                                                        .copyWith(
+                                          albumtracks: PlayerStateManager
                                               .mediaPlayerData
-                                              .albumList![MyAudioHandler
+                                              .albumList![PlayerStateManager
                                                       .mediaPlayerData
                                                       .albumPosition! -
                                                   1]
                                               .tracks,
-                                          trackPosition: MyAudioHandler
+                                          trackPosition: PlayerStateManager
                                                   .mediaPlayerData
-                                                  .albumList![MyAudioHandler
+                                                  .albumList![PlayerStateManager
                                                           .mediaPlayerData
                                                           .albumPosition! -
                                                       1]
                                                   .tracks!
                                                   .length -
                                               1,
-                                          albumPosition: MyAudioHandler
+                                          albumPosition: PlayerStateManager
                                                   .mediaPlayerData
                                                   .albumPosition! -
                                               1,
@@ -609,10 +622,12 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                         IGrooveAssets.svgBackwardIcon,
                                         width: 35,
                                         height: 21,
-                                        color: MyAudioHandler.mediaPlayerData
+                                        color: PlayerStateManager
+                                                        .mediaPlayerData
                                                         .trackPosition! !=
                                                     0 ||
-                                                MyAudioHandler.mediaPlayerData
+                                                PlayerStateManager
+                                                        .mediaPlayerData
                                                         .albumPosition! >
                                                     0
                                             ? IGrooveTheme.colors.white!
@@ -627,14 +642,15 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                 GestureDetector(
                                   behavior: HitTestBehavior.opaque,
                                   onTap: () async {
-                                    MyAudioHandler().play();
+                                    PlayerStateManager().play();
                                     await Future.delayed(
                                         const Duration(milliseconds: 100));
                                     if (mounted) {
                                       setState(() {});
                                     }
                                   },
-                                  child: MyAudioHandler.playerState != "PLAYING"
+                                  child: PlayerStateManager.playerState !=
+                                          "PLAYING"
                                       ? Padding(
                                           padding: const EdgeInsets.only(
                                               bottom: 6.0),
@@ -660,37 +676,40 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                 GestureDetector(
                                     behavior: HitTestBehavior.opaque,
                                     onTap: () async {
-                                      if (MyAudioHandler
+                                      if (PlayerStateManager
                                               .mediaPlayerData.trackPosition! <
-                                          MyAudioHandler.mediaPlayerData
+                                          PlayerStateManager.mediaPlayerData
                                                   .albumtracks!.length -
                                               1) {
-                                        MyAudioHandler.updateMediaPlayerData(
-                                            newMediaPlayerData: MyAudioHandler
+                                        PlayerStateManager.updateMediaPlayerData(
+                                            newMediaPlayerData: PlayerStateManager
                                                 .mediaPlayerData
                                                 .copyWith(
-                                                    trackPosition: MyAudioHandler
-                                                            .mediaPlayerData
-                                                            .trackPosition! +
-                                                        1));
-                                      } else if (MyAudioHandler
+                                                    trackPosition:
+                                                        PlayerStateManager
+                                                                .mediaPlayerData
+                                                                .trackPosition! +
+                                                            1));
+                                      } else if (PlayerStateManager
                                               .mediaPlayerData.albumPosition! <
-                                          MyAudioHandler.mediaPlayerData
+                                          PlayerStateManager.mediaPlayerData
                                                   .albumList!.length -
                                               1) {
-                                        MyAudioHandler.updateMediaPlayerData(
-                                            newMediaPlayerData: MyAudioHandler
-                                                .mediaPlayerData
-                                                .copyWith(
-                                          albumtracks: MyAudioHandler
+                                        PlayerStateManager
+                                            .updateMediaPlayerData(
+                                                newMediaPlayerData:
+                                                    PlayerStateManager
+                                                        .mediaPlayerData
+                                                        .copyWith(
+                                          albumtracks: PlayerStateManager
                                               .mediaPlayerData
-                                              .albumList![MyAudioHandler
+                                              .albumList![PlayerStateManager
                                                       .mediaPlayerData
                                                       .albumPosition! +
                                                   1]
                                               .tracks,
                                           trackPosition: 0,
-                                          albumPosition: MyAudioHandler
+                                          albumPosition: PlayerStateManager
                                                   .mediaPlayerData
                                                   .albumPosition! +
                                               1,
@@ -704,16 +723,18 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                         IGrooveAssets.svgForwardIcon,
                                         width: 35,
                                         height: 21,
-                                        color: MyAudioHandler.mediaPlayerData
+                                        color: PlayerStateManager
+                                                        .mediaPlayerData
                                                         .trackPosition! <
-                                                    MyAudioHandler
+                                                    PlayerStateManager
                                                             .mediaPlayerData
                                                             .albumtracks!
                                                             .length -
                                                         1 ||
-                                                MyAudioHandler.mediaPlayerData
+                                                PlayerStateManager
+                                                        .mediaPlayerData
                                                         .albumPosition! <
-                                                    MyAudioHandler
+                                                    PlayerStateManager
                                                             .mediaPlayerData
                                                             .albumList!
                                                             .length -
@@ -728,8 +749,8 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                 GestureDetector(
                                     behavior: HitTestBehavior.opaque,
                                     onTap: () async {
-                                      MyAudioHandler.repeatActivated =
-                                          !MyAudioHandler.repeatActivated;
+                                      PlayerStateManager.repeatActivated =
+                                          !PlayerStateManager.repeatActivated;
                                       await Future.delayed(
                                           const Duration(milliseconds: 100));
                                       if (mounted) {
@@ -743,10 +764,11 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                         IGrooveAssets.svgRepeatIcon,
                                         width: 19,
                                         height: 22,
-                                        color: MyAudioHandler.repeatActivated
-                                            ? IGrooveTheme.colors.primary
-                                            : IGrooveTheme.colors.white!
-                                                .withOpacity(1),
+                                        color:
+                                            PlayerStateManager.repeatActivated
+                                                ? IGrooveTheme.colors.primary
+                                                : IGrooveTheme.colors.white!
+                                                    .withOpacity(1),
                                       ),
                                     )),
                                 const SizedBox(
@@ -769,9 +791,9 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                         resetPageNumber: resetPageNumber,
                         assetID: widget.parameters?.video != null
                             ? widget.parameters!.video!.id!
-                            : MyAudioHandler
+                            : PlayerStateManager
                                 .mediaPlayerData
-                                .albumtracks![MyAudioHandler
+                                .albumtracks![PlayerStateManager
                                     .mediaPlayerData.trackPosition!]
                                 .id!,
                         activateFanQuestions: false,

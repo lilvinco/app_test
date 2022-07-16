@@ -7,6 +7,7 @@ import 'package:igroove_fan_box_one/core/services/media_player_service.dart';
 import 'package:igroove_fan_box_one/localization/localization.dart';
 import 'package:igroove_fan_box_one/management/app_model.dart';
 import 'package:igroove_fan_box_one/management/push_navigate_service.dart';
+import 'package:igroove_fan_box_one/page_notifier.dart';
 import 'package:igroove_fan_box_one/ui/pages/home/tabs/fanbox/fanbox_overview.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -31,7 +32,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _initTabs();
 
-    MyAudioHandler.streamControllerHomePage.stream.listen((tab) {
+    PlayerStateManager.streamControllerHomePage.stream.listen((tab) {
       print("PlayerStatus => ${tab.toString()}");
       AppModel().currentTabMostAskedQuestions = 0;
       onTabTapped(tab);
@@ -182,7 +183,7 @@ class _HomePageState extends State<HomePage> {
 
   onTabTapped(int index) async {
     PushNavigationService.currentPageName = tabNames[0];
-    MyAudioHandler.setYPositionOfWidget(100);
+    PlayerStateManager.setYPositionOfWidget(100);
     await AppModel().translations.getTranslations(lang: 'de');
 
     if (mounted) {

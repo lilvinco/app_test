@@ -13,6 +13,7 @@ import 'package:igroove_fan_box_one/api/igroove_api.dart';
 import 'package:igroove_fan_box_one/base/info.dart';
 import 'package:igroove_fan_box_one/core/services/audio_handler.dart';
 import 'package:igroove_fan_box_one/igroove.dart';
+import 'package:igroove_fan_box_one/injection_container.dart';
 import 'package:igroove_fan_box_one/management/app_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -38,17 +39,9 @@ Future<void> main() async {
   FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
 
+  await init();
   final session = await AudioSession.instance;
   await session.configure(AudioSessionConfiguration.speech());
-  await AudioService.init(
-    builder: () => MyAudioHandler(),
-    config: AudioServiceConfig(
-      androidNotificationChannelId: 'com.igrooveag.fanbox.audio',
-      androidNotificationChannelName: 'Music playback',
-      androidNotificationOngoing: true,
-      androidStopForegroundOnPause: true,
-    ),
-  );
 
   // Pass all uncaught errors from the framework to Crashlytics.
 
