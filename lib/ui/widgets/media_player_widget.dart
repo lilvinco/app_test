@@ -5,12 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:igroove_fan_box_one/base/base.dart';
 import 'package:igroove_fan_box_one/constants/assets.dart';
 import 'package:igroove_fan_box_one/core/services/audio_handler.dart';
-import 'package:igroove_fan_box_one/core/services/comment_service.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:igroove_fan_box_one/injection_container.dart';
-import 'package:igroove_fan_box_one/main.dart';
 import 'package:igroove_fan_box_one/page_notifier.dart';
-import 'package:igroove_fan_box_one/ui/pages/home/tabs/fanbox/fanbox.dart';
 
 class MediaPlayerWidget extends StatefulWidget {
   const MediaPlayerWidget({Key? key}) : super(key: key);
@@ -361,7 +358,7 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
                               GestureDetector(
                                 behavior: HitTestBehavior.opaque,
                                 onTap: () async {
-                                  PlayerStateManager.playMusic();
+                                  PlayerStateManager().pausePlayPlayer();
                                 },
                                 child: PlayerStateManager.playerState !=
                                         "PLAYING"

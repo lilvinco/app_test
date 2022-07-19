@@ -3,6 +3,7 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Checkbox;
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -32,8 +33,8 @@ class _LoginPageState extends State<LoginPage> {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isChecked = false;
-  String? email = "test@igroove.ch";
-  String? password = "Test.2206";
+  String? email = kDebugMode ? "test@igroove.ch" : null;
+  String? password = kDebugMode ? "Test.2206" : null;
   bool isLoading = false;
 
   @override

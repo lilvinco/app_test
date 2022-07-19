@@ -150,9 +150,6 @@ class PlayerStateManager {
   }
 
   static audioPlayerReset() async {
-    //await audioPlayer.stop();
-    //await audioPlayer.release();
-
     audioPlayerStop();
     mediaPlayerData = MediaPlayerData();
     durationState = const DurationState();
@@ -163,9 +160,7 @@ class PlayerStateManager {
 
   final _audioHandler = sl<MyAudioHandler>();
 
-  // Events: Calls coming from the UI
   void init() async {
-    //await _loadPlaylist();
     _listenToChangesInPlaylist();
     _listenToPlaybackState();
     _listenToCurrentPosition();
@@ -173,28 +168,6 @@ class PlayerStateManager {
     _listenToTotalDuration();
     _listenToChangesInSong();
   }
-
-  /* void _listenToChangesInYPosition() {
-  PlayerStateManager.streamControllerWidgetYPosition.stream.listen((newPosition) {
-  yPositionWidget = newPosition;
-  print("Switch position to => ${yPositionWidget.toString()}");
-  if (mounted) {
-  setState(() {});
-  }
-  });}
-*/
-
-/*  Future<void> _loadPlaylist() async {
-    final mediaItems = playlist
-        .map((song) => MediaItem(
-              id: song['id'] ?? '',
-              album: song['album'] ?? '',
-              title: song['title'] ?? '',
-              extras: {'url': song['url']},
-            ))
-        .toList();
-    _audioHandler.addQueueItems(mediaItems);
-  }*/
 
   void _listenToChangesInPlaylist() {
     _audioHandler.queue.listen((playlist) {
@@ -235,13 +208,16 @@ class PlayerStateManager {
 
   void _listenToCurrentPosition() {
     AudioService.position.listen((position) {
-      /*final oldState = progressNotifier.value;
+      /*final oldState = streamControllerDuration.value;
       progressNotifier.value = ProgressBarState(
         current: position,
         buffered: oldState.buffered,
         total: oldState.total,
       );*/
       //TODO: notify ui listeners, show position
+      PlayerStateManager.streamControllerDuration.add(DurationState(
+        progress: position,
+      ));
     });
   }
 
@@ -266,6 +242,7 @@ class PlayerStateManager {
       //   total: mediaItem?.duration ?? Duration.zero,
       // );
       //TODO: notify ui listeners, show total duration
+      //PlayerStateManager.streamControllerDuration.add(DurationState(total: mediaItem));
     });
   }
 
@@ -286,6 +263,19 @@ class PlayerStateManager {
       isFirstSongNotifier.value = playlist.first == mediaItem;
       isLastSongNotifier.value = playlist.last == mediaItem;
     }
+  }
+
+  void pausePlayPlayer() {
+    print(PlayerStateManager.playerState);
+    if (PlayerStateManager.playerState != "PLAYING") {
+      play();
+      PlayerStateManager.playerState = "PLAYING";
+    } else {
+      print("PlayerStateManager.playerState");
+      pause();
+      PlayerStateManager.playerState = "PAUSED";
+    }
+    streamControllerPlayerStateUpdate.add("");
   }
 
   void play() => _audioHandler.play();
@@ -325,8 +315,6 @@ class PlayerStateManager {
   }
 
   Future<void> add(song) async {
-    //final songRepository = getIt<PlaylistRepository>();
-    //final song = await songRepository.fetchAnotherSong();
     final mediaItem = MediaItem(
       id: song['id'] ?? '',
       album: song['album'] ?? '',
@@ -346,7 +334,5 @@ class PlayerStateManager {
     _audioHandler.customAction('dispose');
   }
 
-  void stop() {
-    _audioHandler.stop();
-  }
+  void stop() => _audioHandler.stop();
 }

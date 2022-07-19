@@ -244,13 +244,13 @@ class _FanBoxPageState extends State<FanBoxPage> {
                   behavior: HitTestBehavior.opaque,
                   onTap: () async {
                     if (PlayerStateManager.playerState == "PLAYING") {
-                      playerStateManager.pause();
+                      playerStateManager.pausePlayPlayer();
                       //MyAudioHandler.pausePlayPlayer();
                     } else {
                       if (PlayerStateManager
                           .mediaPlayerData.albumtracks!.isNotEmpty) {
                         print("Tap");
-                        playerStateManager.play();
+                        playerStateManager.pausePlayPlayer();
                         //MyAudioHandler.pausePlayPlayer();
                       } else {
                         print("Pat");
@@ -263,6 +263,7 @@ class _FanBoxPageState extends State<FanBoxPage> {
                                 albumList: releasesList,
                                 albumPosition: 0));
                         PlayerStateManager.setShowSmallPlayer(true);
+                        playerStateManager.pausePlayPlayer();
                       }
                     }
                   },

@@ -245,6 +245,7 @@ class _AlbumPageState extends State<AlbumPage> with TickerProviderStateMixin {
               albumPosition: releaseIndex),
         );
         PlayerStateManager.setShowSmallPlayer(true);
+        playerStateManager.pausePlayPlayer();
       },
       child: Column(
         children: <Widget>[

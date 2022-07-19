@@ -642,7 +642,7 @@ class _FullMediaPlayerWidgetState extends State<FullMediaPlayerWidget> {
                                 GestureDetector(
                                   behavior: HitTestBehavior.opaque,
                                   onTap: () async {
-                                    PlayerStateManager().play();
+                                    PlayerStateManager().pausePlayPlayer();
                                     await Future.delayed(
                                         const Duration(milliseconds: 100));
                                     if (mounted) {
