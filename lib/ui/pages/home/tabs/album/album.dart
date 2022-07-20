@@ -235,7 +235,6 @@ class _AlbumPageState extends State<AlbumPage> with TickerProviderStateMixin {
       behavior: HitTestBehavior.opaque,
       onTap: () async {
         playerStateManager.stop();
-        //await MyAudioHandler.audioPlayer.stop();
         PlayerStateManager.updateMediaPlayerData(
           newMediaPlayerData: MediaPlayerData(
               activateStreaming: true,

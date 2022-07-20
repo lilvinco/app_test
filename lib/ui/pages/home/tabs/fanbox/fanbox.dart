@@ -1,4 +1,3 @@
-import 'package:audio_service/audio_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -6,12 +5,10 @@ import 'package:igroove_fan_box_one/api/auth.dart';
 import 'package:igroove_fan_box_one/base/base.dart';
 import 'package:igroove_fan_box_one/constants/assets.dart';
 import 'package:igroove_fan_box_one/core/services/audio_handler.dart';
-import 'package:igroove_fan_box_one/core/services/media_player_service.dart';
 import 'package:igroove_fan_box_one/core/services/user_service.dart';
 import 'package:igroove_fan_box_one/igroove.dart';
 import 'package:igroove_fan_box_one/injection_container.dart';
 import 'package:igroove_fan_box_one/localization/localization.dart';
-import 'package:igroove_fan_box_one/main.dart';
 import 'package:igroove_fan_box_one/management/helper.dart';
 import 'package:igroove_fan_box_one/model/releases_model.dart';
 import 'package:igroove_fan_box_one/page_notifier.dart';
@@ -245,16 +242,14 @@ class _FanBoxPageState extends State<FanBoxPage> {
                   onTap: () async {
                     if (PlayerStateManager.playerState == "PLAYING") {
                       playerStateManager.pausePlayPlayer();
-                      //MyAudioHandler.pausePlayPlayer();
                     } else {
                       if (PlayerStateManager
                           .mediaPlayerData.albumtracks!.isNotEmpty) {
                         print("Tap");
                         playerStateManager.pausePlayPlayer();
-                        //MyAudioHandler.pausePlayPlayer();
                       } else {
                         print("Pat");
-                        // await MyAudioHandler.audioPlayer.stop();
+                        // playerStateManager.stop();
                         PlayerStateManager.updateMediaPlayerData(
                             newMediaPlayerData: MediaPlayerData(
                                 activateStreaming: true,

@@ -62,166 +62,31 @@ class _MediaPlayerWidgetState extends State<MediaPlayerWidget> {
       }
     });
 
-    /*AudioService.position.listen((Duration p) {
-      MyAudioHandler.streamControllerDuration.add(DurationState(
-          buffered: MyAudioHandler.mediaDuration.maxDuration,
-          progress: MyAudioHandler.mediaDuration.currentPosition,
-          total: MyAudioHandler.mediaDuration.maxDuration));
-
-      MyAudioHandler.setDurationState(DurationState(
-          buffered: MyAudioHandler.mediaDuration.maxDuration,
-          progress: MyAudioHandler.mediaDuration.currentPosition,
-          total: MyAudioHandler.mediaDuration.maxDuration));
-      if (mounted) {
-        setState(() => MyAudioHandler.mediaDuration.currentPosition = p);
-      }
+    PlayerStateManager.streamControllerDuration.stream.listen((event) {
+      print(
+          "Progress: ${event.progress}, Buff: ${event.buffered},  Total: ${event.total}, ");
+      PlayerStateManager.durationState = event;
     });
 
-    _listenToPlaybackState();*/
-/*    audioPlayer.onPlayerStateChanged.listen((PlayerState s) async {
-      MyAudioHandler.setPlayerState(s.name);
+    AudioService.position.listen((Duration p) {
+      print("Duration ${p.inMicroseconds},"
+          " Max ${PlayerStateManager.mediaDuration.maxDuration},"
+          " curr ${PlayerStateManager.mediaDuration.currentPosition}, total ${PlayerStateManager.mediaDuration.totalPlayedDuration}, ");
+      PlayerStateManager.streamControllerDuration.add(DurationState(
+          buffered: PlayerStateManager.mediaDuration.maxDuration,
+          progress: PlayerStateManager.mediaDuration.currentPosition,
+          total: PlayerStateManager.mediaDuration.maxDuration));
 
-      if (s.name == PlayerState.PLAYING.name) {
-        MyAudioHandler.mediaDuration.lastPosition =
-            MyAudioHandler.mediaDuration.currentPosition;
+      PlayerStateManager.setDurationState(DurationState(
+          buffered: PlayerStateManager.mediaDuration.maxDuration,
+          progress: PlayerStateManager.mediaDuration.currentPosition,
+          total: PlayerStateManager.mediaDuration.maxDuration));
+      if (mounted) {
+        setState(() => PlayerStateManager.mediaDuration.currentPosition = p);
       }
-
-      if (s.name == PlayerState.PAUSED.name) {
-        //checkViewTime();
-        MyAudioHandler.mediaDuration.lastPosition =
-            MyAudioHandler.mediaDuration.currentPosition;
-      }
-      if (s.name == PlayerState.COMPLETED.name) {
-        print("Track completed");
-        //MyAudioHandler.checkViewTime();
-        MyAudioHandler.mediaDuration.lastPosition =
-            MyAudioHandler.mediaDuration.currentPosition;
-
-        if (!CommentService.commentFieldHasFocus) {
-          // Comment field has no focus so track can be skipped
-
-          if (MyAudioHandler.repeatActivated) {
-            // Repeat is activated so play same track again
-
-            MyAudioHandler.updateMediaPlayerData(
-                newMediaPlayerData: MyAudioHandler.mediaPlayerData);
-          } else {
-            if (MyAudioHandler.mediaPlayerData.trackPosition! <
-                MyAudioHandler.mediaPlayerData.albumtracks!.length - 1) {
-              // Next track available so play it
-
-              MyAudioHandler.updateMediaPlayerData(
-                  newMediaPlayerData: MyAudioHandler.mediaPlayerData.copyWith(
-                      trackPosition:
-                          MyAudioHandler.mediaPlayerData.trackPosition! + 1));
-              audioHandler.play();
-            } else {
-              //Check if next release is available
-
-              if (MyAudioHandler.mediaPlayerData.albumList!.length >
-                  (MyAudioHandler.mediaPlayerData.albumPosition! + 1)) {
-                MyAudioHandler.updateMediaPlayerData(
-                    newMediaPlayerData: MyAudioHandler.mediaPlayerData.copyWith(
-                        albumPosition:
-                            MyAudioHandler.mediaPlayerData.albumPosition! + 1,
-                        albumtracks: MyAudioHandler
-                            .mediaPlayerData
-                            .albumList![
-                                MyAudioHandler.mediaPlayerData.albumPosition! +
-                                    1]
-                            .tracks!,
-                        trackPosition: 0));
-              } else {
-                // Next release and next track not available
-
-                await audioHandler.stop();
-              }
-            }
-          }
-        } else {
-          // Comment field has focus so not skipping track
-
-          await audioHandler.stop();
-        }
-      }
-    });*/
-
-    // audioPlayer.onPlayerError.listen((msg) {
-    //   print('audioPlayer error : $msg');
-    // });
+    });
     super.initState();
   }
-
-/*  void _listenToPlaybackState() {
-    audioHandler.playbackState.listen((playbackState) async {
-      final isPlaying = playbackState.playing;
-      final processingState = playbackState.processingState;
-      if (processingState == AudioProcessingState.loading ||
-          processingState == AudioProcessingState.buffering) {
-        print("Buffering...");
-      } else if (!isPlaying) {
-        MyAudioHandler.mediaDuration.lastPosition =
-            MyAudioHandler.mediaDuration.currentPosition;
-      } else if (processingState != AudioProcessingState.completed) {
-        print("Track completed");
-        //MyAudioHandler.checkViewTime();
-        MyAudioHandler.mediaDuration.lastPosition =
-            MyAudioHandler.mediaDuration.currentPosition;
-
-        if (!CommentService.commentFieldHasFocus) {
-          // Comment field has no focus so track can be skipped
-
-          if (MyAudioHandler.repeatActivated) {
-            // Repeat is activated so play same track again
-
-            MyAudioHandler.updateMediaPlayerData(
-                newMediaPlayerData: MyAudioHandler.mediaPlayerData);
-          } else {
-            if (MyAudioHandler.mediaPlayerData.trackPosition! <
-                MyAudioHandler.mediaPlayerData.albumtracks!.length - 1) {
-              // Next track available so play it
-
-              MyAudioHandler.updateMediaPlayerData(
-                  newMediaPlayerData: MyAudioHandler.mediaPlayerData.copyWith(
-                      trackPosition:
-                          MyAudioHandler.mediaPlayerData.trackPosition! + 1));
-              audioHandler.play();
-            } else {
-              //Check if next release is available
-
-              if (MyAudioHandler.mediaPlayerData.albumList!.length >
-                  (MyAudioHandler.mediaPlayerData.albumPosition! + 1)) {
-                MyAudioHandler.updateMediaPlayerData(
-                    newMediaPlayerData: MyAudioHandler.mediaPlayerData.copyWith(
-                        albumPosition:
-                            MyAudioHandler.mediaPlayerData.albumPosition! + 1,
-                        albumtracks: MyAudioHandler
-                            .mediaPlayerData
-                            .albumList![
-                                MyAudioHandler.mediaPlayerData.albumPosition! +
-                                    1]
-                            .tracks!,
-                        trackPosition: 0));
-              } else {
-                // Next release and next track not available
-
-                await audioHandler.stop();
-              }
-            }
-          }
-        } else {
-          // Comment field has focus so not skipping track
-
-          await audioHandler.stop();
-        }
-      } else {
-        MyAudioHandler.mediaDuration.lastPosition =
-            MyAudioHandler.mediaDuration.currentPosition;
-        audioHandler.seek(Duration.zero);
-        audioHandler.pause();
-      }
-    });
-  }*/
 
   @override
   Widget build(BuildContext context) {

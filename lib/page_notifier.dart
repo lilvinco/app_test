@@ -13,10 +13,7 @@ class PlayerStateManager {
   // Listeners: Updates going to the UI
   final currentSongTitleNotifier = ValueNotifier<String>('');
   final playlistNotifier = ValueNotifier<List<String>>([]);
-  //final progressNotifier = ProgressNotifier();
-  //final repeatButtonNotifier = RepeatButtonNotifier();
   final isFirstSongNotifier = ValueNotifier<bool>(true);
-  //final playButtonNotifier = PlayButtonNotifier();
   final isLastSongNotifier = ValueNotifier<bool>(true);
   final isShuffleModeEnabledNotifier = ValueNotifier<bool>(false);
 
@@ -63,14 +60,14 @@ class PlayerStateManager {
   }
 
   static audioPlayerStop() async {
-    // await audioPlayer.stop();
+    PlayerStateManager().stop();
     streamControllerPlayerStateUpdate.add("");
   }
 
   audioPlayerSeek({required Duration durationSeek}) async {
     //await audioPlayer.seek(durationSeek);
 
-    await _audioHandler.seek(durationSeek);
+    await audioHandler.seek(durationSeek);
     streamControllerPlayerStateUpdate.add("");
   }
 
@@ -88,8 +85,8 @@ class PlayerStateManager {
                   'url': mediaPlayerData.albumtracks![index].streamingUrl
                 },
               ));
-      _audioHandler.addQueueItems(items);
-      _audioHandler.queue.add(items);
+      audioHandler.addQueueItems(items);
+      audioHandler.queue.add(items);
       await setupAudioFile();
     }
     streamControllerPlayerStateUpdate.add("");
@@ -125,24 +122,29 @@ class PlayerStateManager {
       fileURL = filePath;
     }
 
-    await audioPlayerSetUrl(fileUrl: fileURL);
+    await PlayerStateManager().audioPlayerSetUrl(fileUrl: fileURL);
     await playMusic();
   }
 
-  static Future audioPlayerSetUrl({required String fileUrl}) async {
+  Future audioPlayerSetUrl({required String fileUrl}) async {
     // await audioPlayer.setUrl(fileUrl);
 
     if (Platform.isIOS) {
-      // int duration = await audioPlayer.getDuration();
-      // setDuration(duration: duration);
+      Duration? duration = await audioHandler.getDuration();
+      print("Im here with: ${duration?.inMilliseconds}");
+      setDuration(duration: duration?.inMilliseconds ?? 0);
     }
     if (Platform.isAndroid) {
       await Future.delayed(const Duration(milliseconds: 500));
-      //   audioPlayer.onDurationChanged.listen((duration) {
-      //     setDuration(duration: duration.inMilliseconds);
-      //   });
+      audioHandler.getDurationStream().listen((duration) {
+        setDuration(duration: duration.inMilliseconds);
+      });
     }
     streamControllerPlayerStateUpdate.add("");
+  }
+
+  static setDurationState(DurationState newDurationState) {
+    durationState = newDurationState;
   }
 
   static playMusic() async {
@@ -158,7 +160,7 @@ class PlayerStateManager {
     print("AudioPlayerReseted");
   }
 
-  final _audioHandler = sl<MyAudioHandler>();
+  final audioHandler = sl<MyAudioHandler>();
 
   void init() async {
     _listenToChangesInPlaylist();
@@ -170,7 +172,7 @@ class PlayerStateManager {
   }
 
   void _listenToChangesInPlaylist() {
-    _audioHandler.queue.listen((playlist) {
+    audioHandler.queue.listen((playlist) {
       if (playlist.isEmpty) {
         playlistNotifier.value = [];
         currentSongTitleNotifier.value = '';
@@ -183,7 +185,7 @@ class PlayerStateManager {
   }
 
   void _listenToPlaybackState() {
-    _audioHandler.playbackState.listen((playbackState) {
+    audioHandler.playbackState.listen((playbackState) {
       final isPlaying = playbackState.playing;
       final processingState = playbackState.processingState;
       if (processingState == AudioProcessingState.loading ||
@@ -200,14 +202,20 @@ class PlayerStateManager {
             .add(playerState != "PLAYING" ? true : false);
         streamControllerPlayerStateUpdate.add("");
       } else {
-        _audioHandler.seek(Duration.zero);
-        _audioHandler.pause();
+        audioHandler.seek(Duration.zero);
+        audioHandler.pause();
       }
     });
   }
 
   void _listenToCurrentPosition() {
     AudioService.position.listen((position) {
+      final oldState = durationState;
+      durationState = DurationState(
+        progress: position,
+        buffered: oldState.buffered,
+        total: oldState.total,
+      );
       /*final oldState = streamControllerDuration.value;
       progressNotifier.value = ProgressBarState(
         current: position,
@@ -215,14 +223,18 @@ class PlayerStateManager {
         total: oldState.total,
       );*/
       //TODO: notify ui listeners, show position
-      PlayerStateManager.streamControllerDuration.add(DurationState(
-        progress: position,
-      ));
+      PlayerStateManager.streamControllerDuration.add(durationState);
     });
   }
 
   void _listenToBufferedPosition() {
-    _audioHandler.playbackState.listen((playbackState) {
+    audioHandler.playbackState.listen((playbackState) {
+      final oldState = durationState;
+      durationState = DurationState(
+        progress: oldState.progress,
+        buffered: playbackState.bufferedPosition,
+        total: oldState.total,
+      );
       // final oldState = progressNotifier.value;
       // progressNotifier.value = ProgressBarState(
       //   current: oldState.current,
@@ -230,32 +242,37 @@ class PlayerStateManager {
       //   total: oldState.total,
       // );
       //TODO: notify ui listeners, show buffered position
+
+      PlayerStateManager.streamControllerDuration.add(durationState);
     });
   }
 
   void _listenToTotalDuration() {
-    _audioHandler.mediaItem.listen((mediaItem) {
-      // final oldState = progressNotifier.value;
-      // progressNotifier.value = ProgressBarState(
-      //   current: oldState.current,
-      //   buffered: oldState.buffered,
-      //   total: mediaItem?.duration ?? Duration.zero,
-      // );
+    audioHandler.mediaItem.listen((mediaItem) {
+      print("Atinka: ${mediaItem?.duration}");
+      final oldState = durationState;
+      durationState = DurationState(
+        progress: oldState.progress,
+        buffered: oldState.buffered,
+        total: mediaItem?.duration ?? Duration.zero,
+      );
       //TODO: notify ui listeners, show total duration
-      //PlayerStateManager.streamControllerDuration.add(DurationState(total: mediaItem));
+
+      PlayerStateManager.mediaDuration.maxDuration = mediaItem?.duration;
+      PlayerStateManager.streamControllerDuration.add(durationState);
     });
   }
 
   void _listenToChangesInSong() {
-    _audioHandler.mediaItem.listen((mediaItem) {
+    audioHandler.mediaItem.listen((mediaItem) {
       currentSongTitleNotifier.value = mediaItem?.title ?? '';
       _updateSkipButtons();
     });
   }
 
   void _updateSkipButtons() {
-    final mediaItem = _audioHandler.mediaItem.value;
-    final playlist = _audioHandler.queue.value;
+    final mediaItem = audioHandler.mediaItem.value;
+    final playlist = audioHandler.queue.value;
     if (playlist.length < 2 || mediaItem == null) {
       isFirstSongNotifier.value = true;
       isLastSongNotifier.value = true;
@@ -265,26 +282,38 @@ class PlayerStateManager {
     }
   }
 
-  void pausePlayPlayer() {
-    print(PlayerStateManager.playerState);
-    if (PlayerStateManager.playerState != "PLAYING") {
-      play();
-      PlayerStateManager.playerState = "PLAYING";
-    } else {
-      print("PlayerStateManager.playerState");
-      pause();
+  void pausePlayPlayer() async {
+    if (PlayerStateManager.playerState == "PLAYING") {
+      await pause();
       PlayerStateManager.playerState = "PAUSED";
+    } else {
+      PlayerStateManager.mediaDuration.maxDuration =
+          audioHandler.mediaItem.value?.duration;
+      PlayerStateManager.playerState = "PLAYING";
+      await play();
     }
     streamControllerPlayerStateUpdate.add("");
   }
 
-  void play() => _audioHandler.play();
-  void pause() => _audioHandler.pause();
+  static setDuration({required int duration}) {
+    PlayerStateManager.streamControllerDuration.add(
+      DurationState(
+        buffered: Duration.zero,
+        progress: Duration.zero,
+        total: Duration(milliseconds: duration),
+      ),
+    );
+    PlayerStateManager.mediaDuration.maxDuration =
+        Duration(milliseconds: duration);
+  }
 
-  void seek(Duration position) => _audioHandler.seek(position);
+  play() async => await audioHandler.play();
+  pause() async => await audioHandler.pause();
 
-  void previous() => _audioHandler.skipToPrevious();
-  void next() => _audioHandler.skipToNext();
+  void seek(Duration position) => audioHandler.seek(position);
+
+  void previous() => audioHandler.skipToPrevious();
+  void next() => audioHandler.skipToNext();
 
   void repeat() {
     //TODO: remove repeat
@@ -308,9 +337,9 @@ class PlayerStateManager {
     final enable = !isShuffleModeEnabledNotifier.value;
     isShuffleModeEnabledNotifier.value = enable;
     if (enable) {
-      _audioHandler.setShuffleMode(AudioServiceShuffleMode.all);
+      audioHandler.setShuffleMode(AudioServiceShuffleMode.all);
     } else {
-      _audioHandler.setShuffleMode(AudioServiceShuffleMode.none);
+      audioHandler.setShuffleMode(AudioServiceShuffleMode.none);
     }
   }
 
@@ -321,18 +350,21 @@ class PlayerStateManager {
       title: song['title'] ?? '',
       extras: {'url': song['url']},
     );
-    _audioHandler.addQueueItem(mediaItem);
+    audioHandler.addQueueItem(mediaItem);
   }
 
   void remove() {
-    final lastIndex = _audioHandler.queue.value.length - 1;
+    final lastIndex = audioHandler.queue.value.length - 1;
     if (lastIndex < 0) return;
-    _audioHandler.removeQueueItemAt(lastIndex);
+    audioHandler.removeQueueItemAt(lastIndex);
   }
 
   void dispose() {
-    _audioHandler.customAction('dispose');
+    audioHandler.customAction('dispose');
   }
 
-  void stop() => _audioHandler.stop();
+  void stop() {
+    PlayerStateManager.playerState = "COMPLETED";
+    audioHandler.stop();
+  }
 }
